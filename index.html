@@ -1,0 +1,151 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EMI CALCI</title>
+  <style>
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
+    body {
+      background-color: #ffc0cb; /* Pink background */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+    .calculator {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      max-width: 400px;
+      width: 100%;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #ff1493; /* Deep pink title */
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #ff69b4; /* Hot pink buttons */
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 15px;
+    }
+    button:hover {
+      background-color: #ff1493;
+    }
+    .results {
+      text-align: center;
+      margin-top: 15px;
+    }
+    .result-item {
+      margin: 8px 0;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    canvas {
+      margin-top: 20px;
+      max-width: 100%;
+    }
+    @media (max-width: 480px) {
+      .calculator {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <h2>EMI CALCI</h2>
+
+    <label for="loanAmount">Loan Amount (₹)</label>
+    <input type="number" id="loanAmount" placeholder="Enter loan amount" min="0">
+
+    <label for="interestRate">Annual Interest Rate (%)</label>
+    <input type="number" id="interestRate" placeholder="Enter interest rate" min="0" step="0.01">
+
+    <label for="loanTenure">Loan Tenure (Years)</label>
+    <input type="number" id="loanTenure" placeholder="Enter loan tenure" min="0">
+
+    <button onclick="calculateEMI()">Calculate EMI</button>
+    <button onclick="clearFields()" style="background-color:#ff6347;">Clear</button>
+
+    <div class="results" id="results" style="display:none;">
+      <div class="result-item" id="emi"></div>
+      <div class="result-item" id="totalInterest"></div>
+      <div class="result-item" id="totalPayment"></div>
+      <canvas id="chart"></canvas>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    function calculateEMI() {
+      const P = parseFloat(document.getElementById('loanAmount').value);
+      const R = parseFloat(document.getElementById('interestRate').value) / 12 / 100;
+      const N = parseFloat(document.getElementById('loanTenure').value) * 12;
+
+      if (P <= 0 || R < 0 || N <= 0) {
+        alert("Please enter valid positive numbers.");
+        return;
+      }
+
+      const EMI = (P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1);
+      const totalPayment = EMI * N;
+      const totalInterest = totalPayment - P;
+
+      document.getElementById('emi').textContent = `EMI: ₹${EMI.toFixed(2)}`;
+      document.getElementById('totalInterest').textContent = `Total Interest: ₹${totalInterest.toFixed(2)}`;
+      document.getElementById('totalPayment').textContent = `Total Payment: ₹${totalPayment.toFixed(2)}`;
+      document.getElementById('results').style.display = "block";
+
+      // Pie chart for Principal vs Interest
+      const ctx = document.getElementById('chart').getContext('2d');
+      if(window.myChart) window.myChart.destroy();
+      window.myChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Principal', 'Interest'],
+          datasets: [{
+            data: [P, totalInterest],
+            backgroundColor: ['#ff69b4', '#ffb6c1']
+          }]
+        },
+        options: {
+          responsive: true
+        }
+      });
+    }
+
+    function clearFields() {
+      document.getElementById('loanAmount').value = '';
+      document.getElementById('interestRate').value = '';
+      document.getElementById('loanTenure').value = '';
+      document.getElementById('results').style.display = 'none';
+      if(window.myChart) window.myChart.destroy();
+    }
+  </script>
+</body>
+</html>
